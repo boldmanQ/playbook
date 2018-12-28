@@ -1,0 +1,27 @@
+[program:blogapp]
+command=gunicorn -w 4 blogsys.wsgi:application -b 0.0.0.0:8000              ; the program (relative uses PATH, can take args)
+directory=/data/blogsys/blogsys
+umask=022                   
+autostart=true              
+startsecs=4                 
+startretries=3              
+autorestart=unexpected      
+;exitcodes=0,2              
+stopsignal=QUIT            
+stopwaitsecs=10            
+;stopasgroup=false          
+;killasgroup=false          
+user=root                   
+;redirect_stderr=true          
+stdout_logfile=/data/log/blogapp.log       
+stdout_logfile_maxbytes=30MB 
+stdout_logfile_backups=10    
+;stdout_capture_maxbytes=1MB 
+;stdout_events_enabled=false 
+stderr_logfile=/data/log/error.blogapp.log 
+;stderr_logfile_maxbytes=1MB 
+;stderr_logfile_backups=10   
+;stderr_capture_maxbytes=1MB 
+;stderr_events_enabled=false 
+;environment=A="1",B="2"     
+;serverurl=AUTO              

@@ -1,0 +1,55 @@
+---
+# befor execute deployment, the virtual-env, python3, pip should be installed.
+#- name: Install python virtual-env
+# yum: name= state=
+#
+#
+
+- name: Install packages
+  yum: 
+    name: ['git', 'supervisor']
+    state: latest
+
+
+- name: Mkdir application floader
+  file: 
+    dest: /data/
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+
+
+- name: GitPull blogsys application source
+  git:
+    repo: https://github.com/boldmanQ/blogsys.git
+    dest: /data/blogsys
+    force: yes
+    update: yes
+    clone: yes
+
+
+- name: Install requirements dependencies-package
+  pip:
+    requirements: /data/blogsys/requirements.txt
+    executable: /usr/bin/pip
+    state: latest
+
+- name: Keep Nginx start
+  service:
+    name: nginx
+    state: started
+
+- name: Restart blog application
+  supervisorctl:
+    name: blogapp
+    state: restarted
+    #
+    #- name: Delete all .pyc files
+    #  command: find . -name '*.pyc' -delete
+    #  args:
+    #    chdir: "{{ app_repo }}"
+    #
+    #
+    #- name: Start blogsys application
+
