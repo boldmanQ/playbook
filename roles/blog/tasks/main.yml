@@ -29,27 +29,74 @@
     clone: yes
 
 
-- name: Install requirements dependencies-package
+- name: Install pipenv
   pip:
-    requirements: /data/blogsys/requirements.txt
+    name: pipenv
     executable: /usr/bin/pip
     state: latest
+
+- name: Specifying Versions of Python
+  command: "pipenv --python /usr/local/python/bin/python3"
+  args:
+    chdir: "/data/blogsys"
+  environment:
+    LANG: "de_DE.utf-8"
+    LC_ALL: "de_DE.utf-8"
+
+- name: Run application requirements install
+  command: "pipenv install"
+  args:
+    chdir: "/data/blogsys/"
+  environment:
+    LANG: "de_DE.utf-8"
+    LC_ALL: "de_DE.utf-8"
+
+- name: Print package
+  command: "pipenv --venv"
+  args:
+    chdir: "/data/blogsys/"
+  environment:
+    LANG: "de_DE.utf-8"
+    LC_ALL: "de_DE.utf-8"
+
+- name: copy app config file
+  copy:
+    src: /data/blogsys/blogsys/system/settings/prod.py
+    dest: /data/blogsys/blogsys/system/settings/dev.py
+    remote_src: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Make migtations
+  command: "pipenv run python manage.py makemigrations"
+  args:
+    chdir: "/data/blogsys/blogsys"
+  environment:
+    LANG: "de_DE.utf-8"
+    LC_ALL: "de_DE.utf-8"
+
+- name: Migrate
+  command: "pipenv run python manage.py migrate"
+  args:
+    chdir: "/data/blogsys/blogsys"
+  environment:
+    LANG: "de_DE.utf-8"
+    LC_ALL: "de_DE.utf-8"
 
 - name: Keep Nginx start
   service:
     name: nginx
     state: started
 
+- name: Keep Supervisord start
+  service:
+    name: supervisord
+    state: started
+
 - name: Restart blog application
   supervisorctl:
     name: blogapp
     state: restarted
-    #
-    #- name: Delete all .pyc files
-    #  command: find . -name '*.pyc' -delete
-    #  args:
-    #    chdir: "{{ app_repo }}"
-    #
-    #
-    #- name: Start blogsys application
-
+    config: /etc/supervisord.conf
+    supervisorctl_path: /usr/bin/supervisorctl
