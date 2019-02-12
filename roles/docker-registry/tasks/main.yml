@@ -1,0 +1,39 @@
+---
+- name: Deploy install Package
+  synchronize:
+    src: harbor
+    dest: /home/ubuntu/
+    delete: yes
+    owner: no
+    group: no
+    checksum: yes
+  tags:
+    - serverinstall
+
+- name: Generate config file from template
+  template:
+    src: harbor.cfg.j2
+    dest: /home/ubuntu/harbor/harbor.cfg
+  tags:
+    - serverinstall
+
+- name: Install postgresql client
+  apt: pkg=postgresql state=installed
+  tags:
+    - dbinit
+- name: Database init
+  shell: psql -h {{ db_host }} "dbname=postgres user={{ db_user }} password={{ db_password }}" -f initial-registry.sql
+  args:
+    chdir: /home/ubuntu/harbor/db_init_package
+    executable: /bin/bash
+  tags:
+    - dbinit
+
+
+- name: Execute install scripts
+  shell: ./install.sh --with-clair 
+  args:
+    chdir: /home/ubuntu/harbor
+    executable: /bin/bash
+  tags:
+    - serverinstall

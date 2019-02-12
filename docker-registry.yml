@@ -1,0 +1,4 @@
+---
+- hosts: docker-registry
+  roles:
+    - {role: harbor, tags: serverinstall}
